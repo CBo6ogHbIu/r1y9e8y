@@ -31,6 +31,11 @@ func get_window_list($mask)
 	local $aList = WinList($mask)
 
 	if $aList[0][0] <> 0 then
+;~ 		For $i = 1 To $aList[0][0]
+;~ 			If $aList[$i][0] <> "" And BitAND(WinGetState($aList[$i][1]), 2) Then
+;~ 				MsgBox($MB_SYSTEMMODAL, "", "Title: " & $aList[$i][0] & @CRLF & "Handle: " & $aList[$i][1])
+;~ 			EndIf
+;~ 		Next
 		$windows_are_ready = true
 		$dd_window_handle = $aList[1][1]
 	else
@@ -47,8 +52,8 @@ endfunc
 
 ; Main Loop
 while true
+; 	get_window_list("[CLASS:MSPaintApp]")
 	get_window_list("[TITLE:II]")
-
 	WinActivate($dd_window_handle)
 	check_alive()
 	search_for_target()
