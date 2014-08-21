@@ -1,0 +1,6 @@
+global const $kRouletteWindowLeft[2] = [53,309]
+global const $kRouletteWindowRight[2] = [375,719]
+global const $kInputField[2] = [98,495]
+global const $kRedButton[2] = [213,492]
+global const $kBlackButton[2] = [273,495]
+global const $kBackButton[2] = [81,512]
