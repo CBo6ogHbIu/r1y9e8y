@@ -1,105 +1,94 @@
-Global Const $kEmptyColor = -1
-Global Const $kBarFull = 95
-Global Const $kBarHalf = 50
-Global Const $kBarThird = 30
-Global Const $kBarCritical = 20
-Global $gMapChecksum = 0
-Global $gTargetChecksum = 0
+#include <MsgBoxConstants.au3>
+global const $empty_color = -1
+global const $bar_full = 95
+global const $bar_half = 50
+global const $bar_third = 25
+global const $bar_critical = 15
 
-Func IsTargetExist()
+global $map_checksum = 0
+global $target_checksum = 0
+
+func is_target_exist()
 	; Check target info window existance
-;~ 	If IsPixelExistClient($kTargetWindowLeft, $kTargetWindowRight, $kTargetWindowColorBrown) Then
-;~ 		If IsPixelExistClient($kTargetWindowLeft, $kTargetWindowRight, $kTargetWindowColorGray) Then
-	If IsPixelExistClientEx($kTargetWindowLeft, $kTargetWindowRight, $kTargetWindowColorBrown) Then
-		If IsPixelExistClientEx($kTargetWindowLeft, $kTargetWindowRight, $kTargetWindowColorGray) Then
-			LogWrite("Target exist")
-			Return True
-		EndIf
-	EndIf
+	if is_pixel_exists($kTargetWindowLeft, $kTargetWindowRight, $kTargetWindowColorBrown) then
+		if is_pixel_exists($kTargetWindowLeft, $kTargetWindowRight, $kTargetWindowColorGray) then
+			return true
+		endif
+	endif
+endfunc
 
-	LogWrite("Target not exist")
-EndFunc   ;==>IsTargetExist
-
-Func IsTargetAlive()
+func is_target_alive()
 	; Check to red color in target info
-	If IsPixelExistClient($kTargetWindowLeft, $kTargetWindowRight, $kTargetHealthColor) Then
-		LogWrite("Target alive")
-		Return True
-	Else
-		LogWrite("Target not alive")
-		Return False
-	EndIf
-EndFunc   ;==>IsTargetAlive
+	if is_pixel_exists($kTargetWindowLeft, $kTargetWindowRight, $kTargetHealthColor) then
+		return true
+	else
+		return false
+	endif
+endfunc
 
-Func IsTargetPet()
+func is_target_pet()
 	; Check to blue color in target info
-	If IsPixelExistClient($kTargetManaLeft, $kTargetManaRight, $kTargetManaColor) _
-			Or IsPixelExistClient($kTargetManaLeft, $kTargetManaRight, $kTargetManaEmptyColor) Then
-		LogWrite("Target is pet")
-		Return True
+	if is_pixel_exists($kTargetManaLeft, $kTargetManaRight, $kTargetManaColor) _
+	or is_pixel_exists($kTargetManaLeft, $kTargetManaRight, $kTargetManaEmptyColor) then
+		return true
+	else
+		return false
+	endif
+endfunc
+
+func is_bar_less($left, $right, $color, $value)
+	local $coord = get_pixel_coords($left, $right, $color)
+	local $bar_value = get_bar_value($coord, $left, $right)
+
+	;if $bar_value < -10 or $bar_value > 110 then
+	if $bar_value > 110 then
+		MsgBox( $MB_OK, "Error", "bar undefined!, value = " & $bar_value)
+		return false
+	endif
+
+	if $bar_value < $value then
+		return true
+	else
+		return false
+	endif
+endfunc
+
+func is_health_less($value)
+	return is_bar_less($kSelfHealthLeft, $kSelfHealthRight, $kSelfHealthColor, $value)
+endfunc
+
+func is_mana_less($value)
+	return is_bar_less($kSelfManaLeft, $kSelfManaRight, $kSelfManaColor, $value)
+endfunc
+
+func is_target_for_attack()
+	if is_target_exist() and is_target_alive() and not is_target_pet() then
+		return true
+	else
+		return false
+	endif
+endfunc
+
+func is_target_damaged()
+	if not is_target_exist() or not is_target_alive() then
+		return false
+	endif
+	return is_pixels_changed($kTargetHealthLeft, $kTargetHealthRight, $target_checksum)
+endfunc
+
+func is_position_changed()
+	return is_pixels_changed($kMapWindowLeft, $kMapWindowRight, $map_checksum)
+endfunc
+global $negative_values_count = 0
+func check_alive()
+	if is_health_less(2) then
+		$negative_values_count = $negative_values_count + 1
 	Else
-		LogWrite("Target is not pet")
-		Return False
-	EndIf
-EndFunc   ;==>IsTargetPet
+		$negative_values_count = 0
+	Endif
 
-Func IsBarLess($left, $right, $color, $value)
-	Local $coord = GetPixelCoordinateClient($left, $right, $color)
-	Local $bar_value = GetBarValue($coord, $left, $right)
-
-	If $bar_value < -10 Or $bar_value > 110 Then
-		LogWrite("bar undefined!")
-		Return False
-	EndIf
-
-	If $bar_value < $value Then
-		LogWrite("bar < " & $value & "%")
-		Return True
-	Else
-		LogWrite("bar > " & $value & "%")
-		Return False
-	EndIf
-EndFunc   ;==>IsBarLess
-
-Func IsHealthLess($value)
-	LogWrite("IsHealthLess()")
-	Return IsBarLess($kSelfHealthLeft, $kSelfHealthRight, $kSelfHealthColor, $value)
-EndFunc   ;==>IsHealthLess
-
-Func IsManaLess($value)
-	LogWrite("IsManaLess()")
-	Return IsBarLess($kSelfManaLeft, $kSelfManaRight, $kSelfManaColor, $value)
-EndFunc   ;==>IsManaLess
-
-Func IsTargetForAttack()
-	If IsTargetExist() And IsTargetAlive() And Not IsTargetPet() Then
-		Return True
-	Else
-		Return False
-	EndIf
-EndFunc   ;==>IsTargetForAttack
-
-Func IsTargetDamaged()
-	If Not IsTargetExist() Or Not IsTargetAlive() Then
-		Return False
-	EndIf
-
-	LogWrite("IsTargetDamaged()")
-	Return IsPixelsChanged($kTargetHealthLeft, $kTargetHealthRight, $gTargetChecksum)
-EndFunc   ;==>IsTargetDamaged
-
-Func IsPositionChanged()
-	LogWrite("IsPositionChanged()")
-
-	Return IsPixelsChanged($kMapWindowLeft, $kMapWindowRight, $gMapChecksum)
-EndFunc   ;==>IsPositionChanged
-
-Func check_alive()
-
-	If IsHealthLess(3) Then
-		LogWrite("	- player died")
-		Exit
-	Else
-		LogWrite("	- player alive")
-	EndIf
-EndFunc   ;==>check_alive
+	if $negative_values_count > 50 then
+		MsgBox( $MB_OK, "OOOOPS", "	- player died")
+		exit
+	endif
+endfunc

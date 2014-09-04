@@ -1,60 +1,52 @@
-global $gPrevHealth = 0
+global $previous_health = 0
 
-func IsHealthDecrease()
-	local $coord = GetPixelCoordinateClient($kSelfHealthLeft, $kSelfHealthRight, $kSelfHealthColor)
+func is_health_decrease()
+	local $coord = get_pixel_coords($kSelfHealthLeft, $kSelfHealthRight, $kSelfHealthColor)
 
 	if $coord[0] = $kErrorCoord then
-		LogWrite("IsHealthDecrease() - health bar is not exist")
 		return false
 	endif
 
-	LogWrite("IsHealthDecrease() - coord[0] = " & $coord[0] & " prev = " & $gPrevHealth)
-
-	if $coord[0] < $gPrevHealth then
-		LogWrite("IsHealthDecrease() - health is decrease")
+	if $coord[0] < $previous_health then
 		return true
 	else
-		LogWrite("IsHealthDecrease() - health is not decrease")
 		return false
 	endif
-	$gPrevHealth = $coord[0]
+	$previous_health = $coord[0]
 endfunc
 
-func UpdatePrevHealth()
-	local $coord = GetPixelCoordinateClient($kSelfHealthLeft, $kSelfHealthRight, $kSelfHealthColor)
+func upddate_prev_health()
+	local $coord = get_pixel_coords($kSelfHealthLeft, $kSelfHealthRight, $kSelfHealthColor)
 
 	if $coord <> false then
-		$gPrevHealth = $coord[0]
+		$previous_health = $coord[0]
 	endif
 endfunc
 
-func Attack()
-	if not IsTargetForAttack() then
+func attack_target()
+	if not is_target_for_attack() then
 		return
 	endif
 
-	UpdatePrevHealth()
-
 	local $timeout = 0
 	local $is_attacked = false
-	while IsTargetAlive()
+
+	while is_target_alive()
 		$timeout = $timeout + 1
 
-		OnCheckHealthAndMana()
+		send_client($attack_target, 1000)
 
-		SendClient($kAttackKey, 500)
-
-		if IsTargetDamaged() and not $is_attacked then
-			OnAttack()
+		if is_target_damaged() and not $is_attacked then
+			attack()
 			$is_attacked = true
 		endif
 
-		if mod($timeout, $kAttackTimeout) == 0 and IsTargetForAttack() and not IsTargetDamaged() then
-			LogWrite("Attack timeout")
-			OnAttackTimeout()
+		if mod($timeout, $attack_timeout) == 0 and is_target_for_attack() and not is_target_damaged() then
+			attack_timeout()
 		endif
 
-		UpdatePrevHealth()
+		upddate_prev_health()
+		check_hp_mp()
 		check_alive()
 	wend
 endfunc

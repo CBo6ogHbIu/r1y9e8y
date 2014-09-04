@@ -1,25 +1,26 @@
 #include "analysis.au3"
-#include "../conf/targets.au3"
+#include "timeout.au3"
 
-func search_for_target()
+func victim_search()
 
 	while true
-		OnCheckHealthAndMana()
 
-		NextTarget()
+		check_hp_mp()
+		check_timeouts()
+		next_target()
 
-		if IsTargetForAttack() then
+		if is_target_for_attack() then
 			exitloop
 		else
-			NextMacros()
+			next_target_macro()
 
-			if IsTargetForAttack() then
+			if is_target_for_attack() then
 				exitloop
 			else
-				SendClient($kCancelTarget, 500)
+				send_client($cancel_target, 500)
 			endif
 		endif
 
-
 	wend
+
 endfunc

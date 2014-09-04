@@ -3,35 +3,33 @@ global const $kYCenter = 450
 
 func move_to_target()
 
-	if not IsTargetForAttack() then
+	if not is_target_for_attack() then
 		return
 	endif
 
-	SendClient($kAttackKey, 1500 )
+	send_client($attack_target, add_difference(1500))
 
 	local $timeout = 0
-	while not IsTargetForAttack()
+	while not is_target_for_attack()
 		$timeout = $timeout + 1
 
 		Sleep(500)
 
-		if mod($timeout, 5) == 0 and not IsPositionChanged() then
-			LogWrite("Move timeout #1")
-			OnAttackTimeout()
+		if mod($timeout, 5) == 0 and not is_position_changed() then
+			attack_timeout()
 			return
 		endif
 
-		if mod($timeout, $kMoveTimeout) == 0 then
-			LogWrite("Move timeout #2")
-			OnAttackTimeout()
+		if mod($timeout, $move_timeout) == 0 then
+			attack_timeout()
 			return
 		endif
 
-		;NextTarget()
+		;next_target()
 	wend
 endfunc
 
-func TurnRight($offset)
+func turn_right($offset)
 	MouseMove($kXCenter, $kYCenter)
 	MouseDown("right")
 	MouseMove($kXCenter + $offset, $kYCenter)
@@ -39,7 +37,7 @@ func TurnRight($offset)
 	MouseUp("right")
 endfunc
 
-func TurnLeft($offset)
+func turn_left($offset)
 	MouseMove($kXCenter, $kYCenter)
 	MouseDown("right")
 	MouseMove($kXCenter - $offset, $kYCenter)
@@ -47,57 +45,29 @@ func TurnLeft($offset)
 	MouseUp("right")
 endfunc
 
-func MoveFront($delay)
-	SendClient("{" & $kWalkFrontKey & " down}", $delay)
-	SendClient("{" & $kWalkFrontKey & " up}", 0)
+func move_forward($delay)
+	send_client("{" & $kWalkFrontKey & " down}", $delay)
+	send_client("{" & $kWalkFrontKey & " up}", 0)
 endfunc
 
-func MoveBack($delay)
-	SendClient("{" & $kWalkBackKey & " down}", $delay)
-	SendClient("{" & $kWalkBackKey & " up}", 0)
+func move_back($delay)
+	send_client("{" & $kWalkBackKey & " down}", $delay)
+	send_client("{" & $kWalkBackKey & " up}", 0)
 endfunc
 
-func RandomMove()
-	MouseClickClient("left", Random(200, 600, 1), Random(300, 500, 1))
-	Sleep(4000)
+func random_move()
+	MouseClick("left", Random(200, 600, 1), Random(300, 500, 1))
+	Sleep(add_difference(4000))
 endfunc
 
-func LookAroundChangePosition()
-	LogWrite("LookAroundChangePosition()")
+func look_around_and_move()
 
-	TurnLeft(40)
-	TurnRight(80)
-	TurnLeft(40)
+	turn_left(20)
+	turn_right(40)
+	turn_left(20)
 
 	do
-		TurnLeft(5)
-		RandomMove()
-	until IsPositionChanged()
-endfunc
-
-func SitLoop()
-	SwitchToggle(11, $kSitKey, true)
-	Sleep(500)
-
-	while not IsTargetForAttack()
-		if not IsHealthLess($kBarFull) and not IsManaLess($kBarFull) then
-			exitloop
-		endif
-
-		Sleep(500)
-	wend
-
-	SwitchToggle(11, $kSitKey, false)
-	Sleep(500)
-endfunc
-
-func Rest()
-	if IsTargetForAttack() or not $kIsRestEnable then
-		return
-	endif
-
-	if IsHealthLess($kBarCritical) or IsManaLess($kBarCritical) then
-		LogWrite("Rest")
-		SitLoop()
-	endif
+		turn_left(Random(4, 8))
+		random_move()
+	until is_position_changed()
 endfunc

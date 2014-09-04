@@ -1,15 +1,13 @@
-func PickDrop($count)
+func pick_drop($count)
 	for $i = 0 to $count step 1
-		SendClient($kPickDropKey, addDifference(600))
+		send_client($pickup_items, add_difference(600))
 	next
 endfunc
 
-func HealthPotion()
-	LogWrite("HealthPotion()")
-	SendClient($kHeathPoitionKey, addDifference(500))
+func health_potion()
+	send_client($health_potion, add_difference(200))
 endfunc
 
-func ManaPotion()
-	LogWrite("ManaPotion()")
-	SendClient($kManaPoitionKey, addDifference(500))
+func mana_potion()
+	send_client($mana_potion, add_difference(200))
 endfunc
